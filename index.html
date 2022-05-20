@@ -11,6 +11,7 @@
             function initialize() {
                 const t = Date.now();
                 const geolocation = new BMap.Geolocation();
+                geolocation.enableSDKLocation();
                 geolocation.getCurrentPosition(function (r) {
                     document.getElementById('demo').innerHTML = JSON.stringify(
                         { ...r, time: Date.now() - t },
