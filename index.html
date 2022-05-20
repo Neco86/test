@@ -6,12 +6,25 @@
     </head>
     <body>
         <pre id="demo">请耐心等待,可能时间会比较长</pre>
+        <pre id="address"></pre>
         <script type="text/javascript">
             function initialize() {
                 const t = Date.now();
                 const geolocation = new BMap.Geolocation();
                 geolocation.getCurrentPosition(function (r) {
-                    document.getElementById('demo').innerHTML = JSON.stringify({...r, time: Date.now() - t}, null, 4);
+                    document.getElementById('demo').innerHTML = JSON.stringify(
+                        { ...r, time: Date.now() - t },
+                        null,
+                        4
+                    );
+                    const myGeo = new BMap.Geocoder({ extensions_town: true });
+                    myGeo.getLocation(
+                        new BMap.Point(r.point.lng, r.point.lat),
+                        function (result) {
+                            document.getElementById('address').innerHTML =
+                                JSON.stringify(result, null, 4);
+                        }
+                    );
                 });
             }
 
