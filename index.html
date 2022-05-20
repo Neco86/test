@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>测试定位</title>
+    </head>
+    <body>
+        <pre id="demo">请耐心等待,可能时间会比较长</pre>
+        <script type="text/javascript">
+            function initialize() {
+                const t = Date.now();
+                const geolocation = new BMap.Geolocation();
+                geolocation.getCurrentPosition(function (r) {
+                    document.getElementById('demo').innerHTML = JSON.stringify({...r, time: Date.now() - t}, null, 4);
+                });
+            }
+
+            function loadScript() {
+                var script = document.createElement('script');
+                script.src =
+                    'https://api.map.baidu.com/api?v=2.0&ak=FGvEO60LrdLznDeTodhu1bSUdSoMrx71&callback=initialize';
+                document.body.appendChild(script);
+            }
+
+            window.onload = loadScript;
+        </script>
+    </body>
+</html>
