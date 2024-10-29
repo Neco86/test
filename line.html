@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .line-wrapper {
+            margin: 2vh 0;
+            color: #000;
+            position: relative;
+            height: 3vh;
+        }
+
+        .line {
+            width: 100vw;
+            background-color: #fe7a28;
+        }
+
+        .txt {
+            position: absolute;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            top: -14px;
+        }
+
+        .line1 {
+            height: 1px;
+        }
+
+        .line2 {
+            height: 2px;
+        }
+
+        .line3 {
+            height: 3px;
+        }
+
+        .line4 {
+            height: 1px;
+            transform: scaleY(0.5);
+        }
+
+        .line5 {
+            height: 2px;
+            transform: scaleY(0.5);
+        }
+
+        .line6 {
+            height: 3px;
+            transform: scaleY(0.5);
+        }
+
+        .line7 {
+            height: 1rem;
+        }
+
+        .line8 {
+            height: 2rem;
+        }
+
+        .line9 {
+            height: 3rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="line-wrapper">
+        <div class="txt">1</div>
+        <div class="line line1"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">2</div>
+        <div class="line line2"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">3</div>
+        <div class="line line3"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">4</div>
+        <div class="line line4"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">5</div>
+        <div class="line line5"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">6</div>
+        <div class="line line6"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">7</div>
+        <div class="line line7"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">8</div>
+        <div class="line line8"></div>
+    </div>
+    <div class="line-wrapper">
+        <div class="txt">9</div>
+        <div class="line line9"></div>
+    </div>
+    <script>
+        document.documentElement.style.fontSize = document.documentElement.clientWidth / 1242 + "px";
+    </script>
+</body>
+</html>
