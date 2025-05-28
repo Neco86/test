@@ -230,7 +230,7 @@
 
             const url = new URL(location.href);
             const query = {};
-            url.searchParams.keys().forEach((key) => {
+            [...url.searchParams.keys()].forEach((key) => {
                 query[key] = url.searchParams.get(key);
             });
 
