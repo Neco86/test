@@ -110,6 +110,10 @@
                 justify-content: center;
             }
 
+            .check-page .button {
+                margin: 30px;
+            }
+
             .button.disabled {
                 opacity: 0.5;
             }
@@ -373,12 +377,7 @@
 
                 const handlePick = (isRight) => {
                     if (isRight) {
-                        if (rightCount + 1 >= RIGHT_COUNT) {
-                            navTo("task");
-                            return;
-                        } else {
-                            setRightCount(rightCount + 1);
-                        }
+                        setRightCount(rightCount + 1);
                     }
                     setCode(getRandom().join(""));
                     setShowCode(true);
@@ -386,6 +385,12 @@
                         setShowCode(false);
                     }, SHOW_TIME);
                 };
+
+                const handleNext = () => {
+                    navTo("task");
+                };
+
+                const showNext = rightCount >= RIGHT_COUNT;
 
                 const Code = html`
                     <div class="check-code-wrapper">
@@ -401,6 +406,11 @@
                 return html`
                     <div class="check-page">
                         <div class="card">${showCode ? Code : Pick}</div>
+                        ${showNext
+                            ? html`<div class="button" onClick=${handleNext}>
+                                  Next
+                              </div>`
+                            : ""}
                     </div>
                 `;
             };
