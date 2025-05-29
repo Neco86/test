@@ -496,6 +496,9 @@
                 `;
                 const Time = html`
                     <div>
+                        <h1 class="green flex-center">
+                            ${diffTime(startTime, now)}
+                        </h1>
                         <h1 class="red flex-center">
                             ${diffTime(endTime, now)}
                         </h1>
