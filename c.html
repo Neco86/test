@@ -189,59 +189,21 @@
                 useRef,
             } from "https://esm.sh/preact/hooks";
             import htm from "https://esm.sh/htm";
+            import { decrypt, encrypt } from "https://esm.sh/simple-base62-aes";
 
             const html = htm.bind(h);
 
+            const KEY = "e727b1b5c8a7e69c";
+
             const encode = (data) => {
-                const keys = Object.keys(data);
-                const r = Math.random() * 51;
-                const c =
-                    r < 26
-                        ? String.fromCharCode(65 + r)
-                        : String.fromCharCode(71 + r);
-
-                const getOffsetText = (text) => {
-                    return text
-                        .split("")
-                        .map((c) => String.fromCharCode(c.charCodeAt(0) + r))
-                        .join("");
-                };
-
-                const text = keys
-                    .map((k) => {
-                        return `${k}=${JSON.stringify(data[k])}`;
-                    })
-                    .join("|");
-
-                const res = encodeURIComponent(
-                    btoa(`${c}${getOffsetText(text)}`).replace(/=+$/, "")
-                );
-                return res;
+                return encodeURIComponent(encrypt(JSON.stringify(data), KEY));
             };
 
             const decode = (data) => {
                 if (!data) {
                     return {};
                 }
-                const u = decodeURIComponent(data);
-                const pad = u.length % 4;
-                const d = atob(`${u}${"=".repeat(pad ? 4 - pad : 0)}`);
-                const c = d[0].charCodeAt();
-                const r = c < 91 ? c - 65 : c - 71;
-                const getOffsetText = (text) => {
-                    return text
-                        .split("")
-                        .map((c) => String.fromCharCode(c.charCodeAt(0) - r))
-                        .join("");
-                };
-                const res = {};
-                getOffsetText(d.slice(1))
-                    .split("|")
-                    .forEach((text) => {
-                        const [k, v] = text.split("=");
-                        res[k] = JSON.parse(v);
-                    });
-                return res;
+                return JSON.parse(decrypt(decodeURIComponent(data), KEY));
             };
 
             const getRandom = () => {
