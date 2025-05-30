@@ -210,7 +210,6 @@
                 const iv = getRandomString();
                 const str = encrypt(JSON.stringify(data), KEY, iv);
                 const res = `${iv}${str}`;
-                console.log(iv, str);
                 return encodeURIComponent(res);
             };
 
