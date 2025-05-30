@@ -195,15 +195,34 @@
 
             const KEY = "e727b1b5c8a7e69c";
 
-            const encode = (data) => {
-                return encodeURIComponent(encrypt(JSON.stringify(data), KEY));
+            const getRandomString = (
+                length = 16,
+                chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            ) => {
+                let res = "";
+                for (let i = 0; i < length; i++) {
+                    res += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return res;
             };
 
-            const decode = (data) => {
-                if (!data) {
+            const encode = (data) => {
+                const iv = getRandomString();
+                const str = encrypt(JSON.stringify(data), KEY, iv);
+                const res = `${iv}${str}`;
+                console.log(iv, str);
+                return encodeURIComponent(res);
+            };
+
+            const decode = (text) => {
+                if (!text) {
                     return {};
                 }
-                return JSON.parse(decrypt(decodeURIComponent(data), KEY));
+                const decodeText = decodeURIComponent(text);
+                const iv = decodeText.slice(0, 16);
+                const json = decrypt(decodeText.slice(16), KEY, iv);
+                const res = JSON.parse(json);
+                return res;
             };
 
             const getRandom = () => {
