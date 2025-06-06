@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <button id="btn">jump</button>
-    <script>
-        btn.onclick = () => {
-            top.location.href = 'baiduboxapp://v1/easybrowse/open?url=https%3A%2F%2Fm.baidu.com&append=0&style=%7B%22barcolor%22%3A%2200000000%22%2C%22layoutfullscreen%22%3A%221%22%7D&newbrowser=1&showtoolbar=0&keyboardresize=1';
-        }
-    </script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <button id="btn">jump</button>
+        <script>
+            btn.onclick = () => {
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                iframe.src = "baiduboxapp://v1/browser/search?query=%E6%B3%95%E8%80%83";
+                document.body.appendChild(iframe);
+                top.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
+            };
+        </script>
+    </body>
 </html>
