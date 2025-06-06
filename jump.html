@@ -9,7 +9,24 @@
         <button id="btn">jump</button>
         <script>
             btn.onclick = () => {
-                top.location.href = "baiduboxapp://v1/browser/search?query=%E6%B3%95%E8%80%83";
+                  const start = Date.now();
+                  const timeout = setTimeout(() => {
+                    const elapsed = Date.now() - start;
+                    if (elapsed < 1500) {
+                      window.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
+                    }
+                  }, 1000);
+                
+                  // 可选：监听可见性变化
+                  const onVisibilityChange = () => {
+                    if (document.hidden) {
+                      clearTimeout(timeout);
+                    }
+                  };
+                
+                  document.addEventListener('visibilitychange', onVisibilityChange);
+                
+                  window.location.href = 'baiduboxapp://v1/browser/search?query=%E6%B3%95%E8%80%83';
             };
         </script>
     </body>
