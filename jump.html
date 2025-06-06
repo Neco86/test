@@ -10,9 +10,11 @@
         <script>
             btn.onclick = () => {
                 top.location.href = "baiduboxapp://v1/browser/search?query=%E6%B3%95%E8%80%83";
-                setTimeout(() => {
-                    top.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
-                }, 0);
+                document.addEventListener('visibilitychange', () => {
+                  if (!document.hidden) {
+                      top.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
+                  }
+                });
             };
         </script>
     </body>
