@@ -13,7 +13,10 @@
                 iframe.style.display = "none";
                 iframe.src = "baiduboxapp://v1/browser/search?query=%E6%B3%95%E8%80%83";
                 document.body.appendChild(iframe);
-                top.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    top.location.href = 'https://m.baidu.com/s?wd=%E6%B3%95%E8%80%83';
+                }, 0);
             };
         </script>
     </body>
