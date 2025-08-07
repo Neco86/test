@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>schedule</title>
+        <style>
+            body {
+                background: #e5e7eb;
+                padding: 0 20px;
+                min-width: fit-content;
+            }
+            .flex {
+                display: flex;
+            }
+            h1 {
+                margin-top: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module">
+            import { h, render } from "https://esm.sh/preact";
+            import { useState } from "https://esm.sh/preact/hooks";
+            import htm from "https://esm.sh/htm";
+            import j2c from "https://esm.sh/j2c";
+            import html2canvas from "https://esm.sh/html2canvas";
+            import JSZip from "https://esm.sh/jszip";
+            import fileSaver from "https://esm.sh/file-saver";
+
+            const css = (obj) => {
+                const sheet = j2c.sheet(obj);
+                const style = document.createElement("style");
+                document.head.appendChild(style);
+                style.innerText = sheet;
+                return sheet;
+            };
+
+            const styles = css({
+                ".dayWrapper": {
+                    width: "150px",
+                    minWidth: "150px",
+                    flex: 1,
+                    minHeight: "100px",
+                    border: "1px solid #eee",
+                    padding: "12px 21px",
+                    boxSizing: "border-box",
+                    whiteSpace: "nowrap",
+
+                    " .dayTextWrapper": {
+                        display: "flex",
+                        justifyContent: "space-between",
+
+                        " span:nth-child(2)": {
+                            color: "#aaa",
+                        },
+                    },
+
+                    " .tag": {
+                        padding: "3px 6px",
+                        borderRadius: "3px",
+                        background: "#87ceeb66",
+                        color: "#3F51B5",
+                        marginTop: "12px",
+                    },
+                },
+
+                ".inputWrapper": {
+                    " textarea": {
+                        width: "100%",
+                        marginBottom: "12px",
+                        borderColor: "#eee",
+                        borderRadius: "6px",
+                        padding: "12px 20px",
+                        boxSizing: "border-box",
+                    },
+
+                    " button": {
+                        background: "rgb(59 130 246)",
+                        color: "#fff",
+                        padding: "12px 20px",
+                        borderRadius: "6px",
+                        border: "none",
+                        marginRight: "20px",
+                    },
+                },
+
+                ".card": {
+                    background:
+                        "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                    padding: "20px",
+                    borderRadius: "6px",
+                    background: "#fff",
+                    margin: "20px 0",
+                },
+            });
+
+            const html = htm.bind(h);
+            const root = document.querySelector("#root");
+
+            const Day = ({ date, day }) => {
+                const week = ["日", "一", "二", "三", "四", "五", "六"];
+                return html`<div class=${styles.dayWrapper}>
+                    <div class="${styles.dayTextWrapper}">
+                        <span>${date.day ? `${date.day}日` : ""}</span>
+                        <span>${date.day ? `周${week[day]}` : ""}</span>
+                    </div>
+                    <div>
+                        ${(date.schedule || []).map(
+                            (s) => html`<div class=${styles.tag}>${s}</div>`
+                        )}
+                    </div>
+                </div>`;
+            };
+
+            const Month = ({ year, month, days }) => {
+                return html`
+                    <div>
+                        <h2>${year}年${month}月</h2>
+                        <div>
+                            ${days.map(
+                                (dateList) =>
+                                    html`<div class="flex">
+                                        ${dateList.map(
+                                            (date, day) =>
+                                                html`<${Day}
+                                                    date=${date}
+                                                    day=${day}
+                                                />`
+                                        )}
+                                    </div>`
+                            )}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const Input = ({ onSubmit, showDownload, onDownload }) => {
+                const [input, setInput] = useState();
+
+                const parseData = (text) => {
+                    const rows = text.split("\n").filter(Boolean);
+                    const result = [];
+                    let date = [];
+                    let time = "";
+                    rows.forEach((row, rowIndex) => {
+                        const data = row.split("\t");
+
+                        if (/时间\s+周一/.test(row)) {
+                            date = [];
+                            time = "";
+                        } else if (/[0-9]+\/[0-9]+\/[0-9]+/.test(row)) {
+                            date = data;
+                        } else if (/主播\s+中控/.test(row)) {
+                            // do nothing
+                        } else if (/[0-9]+\:[0-9]+\-[0-9]+\:[0-9]+/.test(row)) {
+                            data.forEach((d, index) => {
+                                if (!index) {
+                                    time = d.trim();
+                                } else if (d.trim()) {
+                                    if (date[index].trim()) {
+                                        const [timeStart, timeEnd] =
+                                            time.split("-");
+                                        const [year, month, day] = date[index]
+                                            .trim()
+                                            .split("/");
+                                        result.push({
+                                            year: +year || "",
+                                            month: +month || "",
+                                            day: +day || "",
+                                            timeStart,
+                                            timeEnd,
+                                            zhubo: d.trim(),
+                                            zhongkong: data[index + 1].trim(),
+                                        });
+                                    }
+                                }
+                            });
+                        } else {
+                            alert(`第${rowIndex + 1}行 无法解析 ${row}`);
+                        }
+                    });
+
+                    const keys = [
+                        ...new Set(
+                            result.map((d) => `${d["zhubo"]} ${d["zhongkong"]}`)
+                        ),
+                    ];
+
+                    const getDates = (min, max) => {
+                        let startDate = new Date(min.join("/"));
+
+                        const endDate = new Date(max.join("/"));
+
+                        const dates = [];
+                        while (startDate <= endDate) {
+                            const year = startDate.getFullYear();
+                            const month = startDate.getMonth() + 1;
+                            const date = startDate.getDate();
+                            const day = startDate.getDay();
+
+                            let item = dates.find(
+                                (t) => t.year === year && t.month === month
+                            );
+                            if (!item) {
+                                const newItem = {
+                                    year,
+                                    month,
+                                    days: [],
+                                };
+                                dates.push(newItem);
+                                item = newItem;
+                            }
+
+                            let lastDays = item.days[item.days.length - 1];
+                            if (!lastDays || lastDays[6].day) {
+                                const t = new Array(7)
+                                    .fill(null)
+                                    .map(() => ({}));
+                                item.days.push(t);
+                                lastDays = t;
+                            }
+                            lastDays[day] = { day: date, schedule: [] };
+
+                            startDate.setDate(date + 1);
+                        }
+
+                        return dates;
+                    };
+
+                    return keys.map((key) => {
+                        const list = result.filter(
+                            (d) => `${d["zhubo"]} ${d["zhongkong"]}` === key
+                        );
+                        const min = [list[0].year, list[0].month, list[0].day];
+                        const max = [list[0].year, list[0].month, list[0].day];
+
+                        list.forEach((d) => {
+                            if (d.year < min[0]) {
+                                min[0] = d.year;
+                                min[1] = d.month;
+                                min[2] = d.day;
+                            }
+                            if (d.year === min[0] && d.month < min[1]) {
+                                min[1] = d.month;
+                                min[2] = d.day;
+                            }
+                            if (
+                                d.year === min[0] &&
+                                d.month === min[1] &&
+                                d.day < min[2]
+                            ) {
+                                min[2] = d.day;
+                            }
+
+                            if (d.year > max[0]) {
+                                max[0] = d.year;
+                                max[1] = d.month;
+                                max[2] = d.day;
+                            }
+                            if (d.year === max[0] && d.month > max[1]) {
+                                max[1] = d.month;
+                                max[2] = d.day;
+                            }
+                            if (
+                                d.year === max[0] &&
+                                d.month === max[1] &&
+                                d.day > max[2]
+                            ) {
+                                max[2] = d.day;
+                            }
+                        });
+
+                        const dates = getDates(min, max);
+
+                        dates.forEach((date) => {
+                            date.days.forEach((dayRow) => {
+                                dayRow.forEach((day) => {
+                                    list.filter(
+                                        (l) =>
+                                            l.year === date.year &&
+                                            l.month === date.month &&
+                                            l.day === day.day
+                                    ).forEach((l) => {
+                                        day.schedule.push(
+                                            `${l.timeStart}-${l.timeEnd}`
+                                        );
+                                    });
+                                });
+                            });
+                        });
+
+                        return {
+                            title: key,
+                            dates: dates,
+                        };
+                    });
+                };
+
+                const handleClick = () => {
+                    if (input) {
+                        onSubmit(parseData(input));
+                    }
+                };
+
+                return html`<div class=${styles.inputWrapper}>
+                    <h2>数据粘贴区</h2>
+                    <div>
+                        <textarea
+                            rows="15"
+                            onInput=${(e) => setInput(e.target.value || "")}
+                        />
+                    </div>
+                    <div>
+                        <button onClick=${handleClick}>转换数据</button>
+                        ${showDownload
+                            ? html` <button onClick=${onDownload}>下载</button>`
+                            : ""}
+                    </div>
+                </div>`;
+            };
+
+            const App = () => {
+                const [list, setList] = useState([]);
+
+                async function downloadCanvasesAsZip(canvasItems) {
+                    const zip = new JSZip();
+                    // 遍历所有Canvas
+                    for (let i = 0; i < canvasItems.length; i++) {
+                        const { canvas, name } = canvasItems[i];
+
+                        try {
+                            const dataUrl = canvas.toDataURL("image/jpeg");
+
+                            const base64Data = dataUrl.split(",")[1];
+
+                            const binaryData = atob(base64Data);
+                            const arrayBuffer = new ArrayBuffer(
+                                binaryData.length
+                            );
+                            const uintArray = new Uint8Array(arrayBuffer);
+
+                            for (let j = 0; j < binaryData.length; j++) {
+                                uintArray[j] = binaryData.charCodeAt(j);
+                            }
+
+                            const fileName = `${name}.jpg`;
+                            zip.file(fileName, uintArray, { binary: true });
+                        } catch (error) {
+                            console.error(
+                                `处理Canvas "${name}" 时出错:`,
+                                error
+                            );
+                        }
+                    }
+
+                    // 生成ZIP文件
+                    const content = await zip.generateAsync({ type: "blob" });
+
+                    fileSaver.saveAs(content, "images.zip");
+                }
+
+                const handleDownload = async () => {
+                    const p = await Promise.all(
+                        [
+                            ...document.querySelectorAll('[data-download="1"]'),
+                        ].map((container) => {
+                            const name = container
+                                .querySelector("h1")
+                                .innerText.replace(" ", "_");
+                            return html2canvas(container, {
+                                scale: 2,
+                                useCORS: true,
+                                logging: false,
+                                backgroundColor: "#ffffff",
+                            }).then((canvas) => ({ name, canvas }));
+                        })
+                    );
+
+                    downloadCanvasesAsZip(p);
+
+                    // [
+                    //     ...document.querySelectorAll('[data-download="1"]'),
+                    // ].forEach(download);
+                };
+                return html` <div>
+                    <div>
+                        ${html`<${Input}
+                            onSubmit=${setList}
+                            showDownload=${list.length > 0}
+                            onDownload=${handleDownload}
+                        />`}
+                    </div>
+                    ${list.map(
+                        (c) => html`<div class=${styles.card} data-download="1">
+                            <h1>${c.title}</h1>
+                            <div>
+                                ${c.dates.map(
+                                    ({ year, month, days }) =>
+                                        html`<${Month}
+                                            year=${year}
+                                            month=${month}
+                                            days=${days}
+                                        />`
+                                )}
+                            </div>
+                        </div>`
+                    )}
+                </div>`;
+            };
+
+            render(html`<${App} />`, root);
+        </script>
+    </body>
+</html>
