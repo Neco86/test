@@ -103,7 +103,7 @@
             const root = document.querySelector("#root");
 
             const Day = ({ date, day }) => {
-                const week = ["日", "一", "二", "三", "四", "五", "六"];
+                const week = ["一", "二", "三", "四", "五", "六", "日"];
                 return html`<div class=${styles.dayWrapper}>
                     <div class="${styles.dayTextWrapper}">
                         <span>${date.day ? `${date.day}日` : ""}</span>
@@ -198,7 +198,7 @@
 
                         const dates = [];
 
-                        while(startDate.getDay()) {
+                        while(startDate.getDay() !== 1) {
                             startDate.setDate(startDate.getDate() - 1);
                             const year = startDate.getFullYear();
                             const month = startDate.getMonth() + 1;
@@ -208,7 +208,7 @@
                             }
                         }
 
-                        while(endDate.getDay() !== 6) {
+                        while(endDate.getDay() !== 0) {
                             endDate.setDate(endDate.getDate() + 1);
                             const year = endDate.getFullYear();
                             const month = endDate.getMonth() + 1;
@@ -245,7 +245,7 @@
                                 item.days.push(t);
                                 lastDays = t;
                             }
-                            lastDays[day] = { day: date, schedule: [] };
+                            lastDays[day ? day - 1 : 6] = { day: date, schedule: [] };
 
                             startDate.setDate(date + 1);
                         }
