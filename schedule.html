@@ -370,7 +370,7 @@
                                 uintArray[j] = binaryData.charCodeAt(j);
                             }
 
-                            const fileName = `${name}.jpg`;
+                            const fileName = `${name.replace(/\s+/g, "_")}.jpg`;
                             zip.file(fileName, uintArray, { binary: true });
                         } catch (error) {
                             console.error(
@@ -398,7 +398,7 @@
                         downloadList.map((container) => {
                             const name = container
                                 .querySelector("h1")
-                                .innerText.replace(" ", "_");
+                                .innerText;
                             return html2canvas(container, {
                                 scale: 2,
                                 useCORS: true,
