@@ -194,6 +194,27 @@
                         const endDate = new Date(max.join("/"));
 
                         const dates = [];
+
+                        while(startDate.getDay()) {
+                            startDate.setDate(startDate.getDate() - 1);
+                            const year = startDate.getFullYear();
+                            const month = startDate.getMonth() + 1;
+                            if (year !== min[0] || month !== min[1]) {
+                                startDate.setDate(startDate.getDate() + 1);
+                                break;
+                            }
+                        }
+
+                        while(endDate.getDay() !== 6) {
+                            endDate.setDate(endDate.getDate() + 1);
+                            const year = endDate.getFullYear();
+                            const month = endDate.getMonth() + 1;
+                            if (year !== min[0] || month !== min[1]) {
+                                endDate.setDate(endDate.getDate() - 1);
+                                break;
+                            }
+                        }
+
                         while (startDate <= endDate) {
                             const year = startDate.getFullYear();
                             const month = startDate.getMonth() + 1;
