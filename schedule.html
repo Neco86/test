@@ -136,7 +136,7 @@
                 `;
             };
 
-            const Input = ({ onSubmit, showDownload, onDownload }) => {
+            const Input = ({ onSubmit, showDownload, onDownload, downLoadProcess }) => {
                 const [input, setInput] = useState();
 
                 const parseData = (text) => {
@@ -336,7 +336,7 @@
                     <div>
                         <button onClick=${handleClick}>转换数据</button>
                         ${showDownload
-                            ? html` <button onClick=${onDownload}>下载</button>`
+                            ? html` <button onClick=${() => {!downLoadProcess && onDownload()}}>${downLoadProcess || '下载'}</button>`
                             : ""}
                     </div>
                 </div>`;
@@ -344,6 +344,7 @@
 
             const App = () => {
                 const [list, setList] = useState([]);
+                const [downLoadProcess, setDownloadProcess] = useState('');
 
                 async function downloadCanvasesAsZip(canvasItems) {
                     const zip = new JSZip();
@@ -373,6 +374,8 @@
                                 `处理Canvas "${name}" 时出错:`,
                                 error
                             );
+                        } finally {
+                            setDownloadProcess('');
                         }
                     }
 
@@ -383,10 +386,13 @@
                 }
 
                 const handleDownload = async () => {
+                    let c = 0;
+                    const downloadList = [
+                        ...document.querySelectorAll('[data-download="1"]'),
+                    ];
+                    setDownloadProcess(`正在下载 ${c}/${downloadList.length}`);
                     const p = await Promise.all(
-                        [
-                            ...document.querySelectorAll('[data-download="1"]'),
-                        ].map((container) => {
+                        downloadList.map((container) => {
                             const name = container
                                 .querySelector("h1")
                                 .innerText.replace(" ", "_");
@@ -395,15 +401,19 @@
                                 useCORS: true,
                                 logging: false,
                                 backgroundColor: "#ffffff",
-                            }).then((canvas) => ({ name, canvas }));
+                            }).then((canvas) => {
+                                c += 1;
+                                setDownloadProcess(`正在下载 ${c}/${downloadList.length}`);
+                                return { name, canvas };
+                            });
                         })
-                    );
+                    ).then(res => {
+                        setDownloadProcess('正在压缩');
+                        return res;
+                    });
 
                     downloadCanvasesAsZip(p);
 
-                    // [
-                    //     ...document.querySelectorAll('[data-download="1"]'),
-                    // ].forEach(download);
                 };
                 return html` <div>
                     <div>
@@ -411,6 +421,7 @@
                             onSubmit=${setList}
                             showDownload=${list.length > 0}
                             onDownload=${handleDownload}
+                            downLoadProcess=${downLoadProcess}
                         />`}
                     </div>
                     ${list.map(
