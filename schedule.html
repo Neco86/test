@@ -14,7 +14,7 @@
                 display: flex;
             }
             h1 {
-                margin-top: 0;
+                margin: 0;
             }
             h2 {
                 margin:  20px 0;
@@ -41,9 +41,15 @@
             };
 
             const styles = css({
+                ".container": {
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center"
+                },
                 ".dayWrapper": {
                     width: "150px",
                     minWidth: "150px",
+                    maxWidth: "150px",
                     flex: 1,
                     minHeight: "100px",
                     border: "1px solid #eee",
@@ -70,6 +76,8 @@
                 },
 
                 ".inputWrapper": {
+                    width: "1090px",
+
                     " textarea": {
                         width: "100%",
                         marginBottom: "12px",
@@ -90,12 +98,17 @@
                 },
 
                 ".card": {
+                    width: "fit-content",
                     background:
                         "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
                     padding: "20px",
                     borderRadius: "6px",
                     background: "#fff",
                     margin: "20px 0",
+
+                    " .cardContent": {
+                        overflow: "hidden"
+                    }
                 },
             });
 
@@ -418,7 +431,7 @@
                     downloadCanvasesAsZip(p);
 
                 };
-                return html` <div>
+                return html` <div class=${styles.container}>
                     <div>
                         ${html`<${Input}
                             onSubmit=${setList}
@@ -430,7 +443,7 @@
                     ${list.map(
                         (c) => html`<div class=${styles.card} data-download="1">
                             <h1>${c.title}</h1>
-                            <div>
+                            <div class=${styles.cardContent}>
                                 ${c.dates.map(
                                     ({ year, month, days }) =>
                                         html`<${Month}
