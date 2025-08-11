@@ -355,7 +355,10 @@
                     if (input) {
                         onSubmit(
                             parseData(input, (d) =>
-                                options.map((t) => d[t.key]).join(" ")
+                                options
+                                    .filter((t) => t.value)
+                                    .map((t) => d[t.key])
+                                    .join(" ")
                             )
                         );
                     }
