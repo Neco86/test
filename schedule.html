@@ -17,7 +17,7 @@
                 margin: 0;
             }
             h2 {
-                margin:  20px 0;
+                margin: 20px 0;
             }
         </style>
     </head>
@@ -44,7 +44,7 @@
                 ".container": {
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center"
+                    alignItems: "center",
                 },
                 ".dayWrapper": {
                     width: "150px",
@@ -107,8 +107,8 @@
                     margin: "20px 0",
 
                     " .cardContent": {
-                        overflow: "hidden"
-                    }
+                        overflow: "hidden",
+                    },
                 },
             });
 
@@ -152,11 +152,30 @@
                 `;
             };
 
-            const Input = ({ onSubmit, showDownload, onDownload, downLoadProcess }) => {
+            const Input = ({
+                onSubmit,
+                showDownload,
+                onDownload,
+                downLoadProcess,
+            }) => {
                 const [input, setInput] = useState();
+                const [options, setOptions] = useState([
+                    {
+                        label: "主播",
+                        key: "zhubo",
+                        value: true,
+                    },
+                    {
+                        label: "中控",
+                        key: "zhongkong",
+                        value: false,
+                    },
+                ]);
 
-                const parseData = (text) => {
-                    const rows = text.split("\n").filter(t => t.trim());
+                const [data, setData] = useState([]);
+
+                const parseData = (text, getKey = () => "") => {
+                    const rows = text.split("\n").filter((t) => t.trim());
                     const result = [];
                     let date = [];
                     let time = "";
@@ -198,11 +217,7 @@
                         }
                     });
 
-                    const keys = [
-                        ...new Set(
-                            result.map((d) => `${d["zhubo"]} ${d["zhongkong"]}`)
-                        ),
-                    ];
+                    const keys = [...new Set(result.map((d) => getKey(d)))];
 
                     const getDates = (min, max) => {
                         let startDate = new Date(min.join("/"));
@@ -211,7 +226,7 @@
 
                         const dates = [];
 
-                        while(startDate.getDay() !== 1) {
+                        while (startDate.getDay() !== 1) {
                             startDate.setDate(startDate.getDate() - 1);
                             const year = startDate.getFullYear();
                             const month = startDate.getMonth() + 1;
@@ -221,7 +236,7 @@
                             }
                         }
 
-                        while(endDate.getDay() !== 0) {
+                        while (endDate.getDay() !== 0) {
                             endDate.setDate(endDate.getDate() + 1);
                             const year = endDate.getFullYear();
                             const month = endDate.getMonth() + 1;
@@ -258,7 +273,10 @@
                                 item.days.push(t);
                                 lastDays = t;
                             }
-                            lastDays[day ? day - 1 : 6] = { day: date, schedule: [] };
+                            lastDays[day ? day - 1 : 6] = {
+                                day: date,
+                                schedule: [],
+                            };
 
                             startDate.setDate(date + 1);
                         }
@@ -267,9 +285,7 @@
                     };
 
                     return keys.map((key) => {
-                        const list = result.filter(
-                            (d) => `${d["zhubo"]} ${d["zhongkong"]}` === key
-                        );
+                        const list = result.filter((d) => getKey(d) === key);
                         const min = [list[0].year, list[0].month, list[0].day];
                         const max = [list[0].year, list[0].month, list[0].day];
 
@@ -337,7 +353,11 @@
 
                 const handleClick = () => {
                     if (input) {
-                        onSubmit(parseData(input));
+                        onSubmit(
+                            parseData(input, (d) =>
+                                options.map((t) => d[t.key]).join(" ")
+                            )
+                        );
                     }
                 };
 
@@ -352,7 +372,55 @@
                     <div>
                         <button onClick=${handleClick}>转换数据</button>
                         ${showDownload
-                            ? html` <button onClick=${() => {!downLoadProcess && onDownload()}}>${downLoadProcess || '下载'}</button>`
+                            ? html` <button
+                                      onClick=${() => {
+                                          !downLoadProcess && onDownload();
+                                      }}
+                                  >
+                                      ${downLoadProcess || "下载"}
+                                  </button>
+
+                                  <span>
+                                      ${options.map((o) => {
+                                          return html`<span
+                                              onClick=${() => {
+                                                  const newOptions =
+                                                      options.map((t) =>
+                                                          t.key === o.key
+                                                              ? {
+                                                                    ...t,
+                                                                    value: !o.value,
+                                                                }
+                                                              : { ...t }
+                                                      );
+                                                  setOptions(newOptions);
+                                                  if (input) {
+                                                      const getKey = (d) =>
+                                                          newOptions
+                                                              .filter(
+                                                                  (t) => t.value
+                                                              )
+                                                              .map(
+                                                                  (t) =>
+                                                                      d[t.key]
+                                                              )
+                                                              .join(" ");
+                                                      onSubmit(
+                                                          parseData(
+                                                              input,
+                                                              getKey
+                                                          )
+                                                      );
+                                                  }
+                                              }}
+                                              ><input
+                                                  type="checkbox"
+                                                  checked=${o.value}
+                                              />
+                                              <label>${o.label}</label></span
+                                          >`;
+                                      })}
+                                  </span>`
                             : ""}
                     </div>
                 </div>`;
@@ -360,7 +428,7 @@
 
             const App = () => {
                 const [list, setList] = useState([]);
-                const [downLoadProcess, setDownloadProcess] = useState('');
+                const [downLoadProcess, setDownloadProcess] = useState("");
 
                 async function downloadCanvasesAsZip(canvasItems) {
                     const zip = new JSZip();
@@ -391,7 +459,7 @@
                                 error
                             );
                         } finally {
-                            setDownloadProcess('');
+                            setDownloadProcess("");
                         }
                     }
 
@@ -409,9 +477,8 @@
                     setDownloadProcess(`正在下载 ${c}/${downloadList.length}`);
                     const p = await Promise.all(
                         downloadList.map((container) => {
-                            const name = container
-                                .querySelector("h1")
-                                .innerText;
+                            const name =
+                                container.querySelector("h1").innerText;
                             return html2canvas(container, {
                                 scale: 2,
                                 useCORS: true,
@@ -419,17 +486,18 @@
                                 backgroundColor: "#ffffff",
                             }).then((canvas) => {
                                 c += 1;
-                                setDownloadProcess(`正在下载 ${c}/${downloadList.length}`);
+                                setDownloadProcess(
+                                    `正在下载 ${c}/${downloadList.length}`
+                                );
                                 return { name, canvas };
                             });
                         })
-                    ).then(res => {
-                        setDownloadProcess('正在压缩');
+                    ).then((res) => {
+                        setDownloadProcess("正在压缩");
                         return res;
                     });
 
                     downloadCanvasesAsZip(p);
-
                 };
                 return html` <div class=${styles.container}>
                     <div>
