@@ -186,7 +186,7 @@
                             date = [];
                             time = "";
                         } else if (/[0-9]+\/[0-9]+\/[0-9]+/.test(row)) {
-                            const d = data.filter(Boolean);
+                            const d = data.filter(t => `${t || ''}`.trim());
                             const res = [""];
                             for (let i = 0; i < d.length; i++) {
                                 res.push(d[i]);
