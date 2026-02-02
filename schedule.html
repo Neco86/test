@@ -186,7 +186,13 @@
                             date = [];
                             time = "";
                         } else if (/[0-9]+\/[0-9]+\/[0-9]+/.test(row)) {
-                            date = data;
+                            const d = data.filter(Boolean);
+                            const res = [""];
+                            for (let i = 0; i < d.length; i++) {
+                                res.push(d[i]);
+                                res.push("");
+                            }
+                            date = res;
                         } else if (/主播\s+中控/.test(row)) {
                             // do nothing
                         } else if (/[0-9]+\:[0-9]+\-[0-9]+\:[0-9]+/.test(row)) {
